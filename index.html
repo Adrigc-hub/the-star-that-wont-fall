@@ -3,12 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Star That Won't Fall - DOM Edition</title>
+    <title>The Star That Won't Fall - 220 Unique Souls Edition</title>
     <style>
         :root {
-            --primary-red: #c93d14;
+            --primary-red: #ff3b30;
             --star-gold: #fcae1e;
-            --bg-dark: #020306;
+            --bg-dark: #05070f;
+            --proto-white: #eef5f9;
+            --proto-blue-grey: #a9c6d9;
+            --proto-dark: #1b2631;
+            --proto-gold: #fcae1e;
+            --proto-visor: #0d1117;
+            --cyan-soul: #00e1ff;
         }
 
         * {
@@ -21,7 +27,7 @@
         }
 
         body {
-            background-color: #000;
+            background-color: #020306;
             color: #ffffff;
             font-family: 'Courier New', Courier, monospace;
             display: flex;
@@ -32,24 +38,330 @@
             overflow: hidden;
         }
 
-        /* Contenedor Principal Adaptable */
         #gameContainer {
             position: relative;
             width: 100vw;
-            max-width: 600px;
+            max-width: 540px;
             height: 80vh;
-            max-height: 450px;
+            max-height: 540px;
             border: 4px solid var(--primary-red);
             background-color: var(--bg-dark);
             overflow: hidden;
-            box-shadow: 0 0 30px rgba(201, 61, 20, 0.3);
+            box-shadow: 0 0 35px rgba(255, 59, 48, 0.25);
         }
 
-        /* Pantallas de Estado */
+        #mapGrid {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background-image: 
+                linear-gradient(rgba(255, 59, 48, 0.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 59, 48, 0.08) 1px, transparent 1px);
+            background-size: 32px 32px;
+            z-index: 1;
+            transition: background-image 0.5s ease;
+        }
+
+        .map-pillar {
+            position: absolute;
+            background: #111625;
+            border: 3px solid var(--proto-blue-grey);
+            border-radius: 6px;
+            z-index: 3;
+            box-shadow: 0 0 10px rgba(169, 198, 217, 0.2);
+        }
+
+        /* --- LOADING SCREEN --- */
+        #protoLoadingScreen {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #090c15;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            transition: opacity 0.6s ease;
+        }
+
+        .proto-avatar {
+            width: 140px;
+            height: 140px;
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .proto-ear-left, .proto-ear-right {
+            position: absolute;
+            width: 32px;
+            height: 70px;
+            background: var(--proto-white);
+            border: 3px solid #000;
+            border-radius: 50% 50% 0 0;
+            top: 5px;
+        }
+        .proto-ear-left {
+            left: 15px;
+            transform: rotate(-28deg);
+            border-left: 6px solid var(--proto-blue-grey);
+        }
+        .proto-ear-right {
+            right: 15px;
+            transform: rotate(28deg);
+            border-right: 6px solid var(--proto-blue-grey);
+        }
+        .proto-ear-inner {
+            width: 12px;
+            height: 40px;
+            background: var(--proto-gold);
+            margin: 10px auto 0 auto;
+            border-radius: 50% 50% 0 0;
+        }
+
+        .proto-head {
+            position: absolute;
+            width: 86px;
+            height: 80px;
+            background: var(--proto-white);
+            border-radius: 24px;
+            bottom: 10px;
+            left: 27px;
+            border: 4px solid #000;
+            box-shadow: inset 0 -8px 0 var(--proto-blue-grey);
+        }
+
+        .proto-cheek-left, .proto-cheek-right {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--proto-white);
+            border: 3px solid #000;
+            bottom: 22px;
+            z-index: -1;
+        }
+        .proto-cheek-left {
+            left: 15px;
+            transform: rotate(-45deg);
+            border-right: none;
+            border-top: none;
+        }
+        .proto-cheek-right {
+            right: 15px;
+            transform: rotate(45deg);
+            border-left: none;
+            border-top: none;
+        }
+
+        .proto-visor {
+            position: absolute;
+            width: 66px;
+            height: 44px;
+            background: var(--proto-visor);
+            border-radius: 16px;
+            top: 14px;
+            left: 6px;
+            border: 3px solid var(--proto-gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .proto-face {
+            color: var(--proto-gold);
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            animation: blinkEyes 3s infinite;
+        }
+
+        @keyframes blinkEyes {
+            0%, 90%, 100% { content: "^w^"; opacity: 1; }
+            95% { opacity: 0; }
+        }
+
+        .load-bar {
+            width: 220px;
+            height: 12px;
+            border: 2px solid var(--proto-blue-grey);
+            background: #000;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 15px;
+            box-shadow: 0 0 10px rgba(169, 198, 217, 0.3);
+        }
+
+        .load-progress {
+            width: 0%;
+            height: 100%;
+            background: var(--proto-gold);
+            transition: width 0.08s linear;
+        }
+
+        /* --- PLAYER SPRITES --- */
+        #player {
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            z-index: 10;
+            will-change: transform;
+            pointer-events: none;
+        }
+
+        .fox-sprite {
+            width: 100%;
+            height: 100%;
+            background: #d35400; 
+            border-radius: 6px;
+            position: relative;
+            border: 2px solid #000;
+            box-shadow: inset 0 -4px 0 #a04000;
+        }
+
+        .fox-sprite::before, .fox-sprite::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #d35400;
+            top: -7px;
+            border: 2px solid #000;
+        }
+        .fox-sprite::before {
+            left: -1px;
+            border-radius: 4px 0 0 0;
+            border-right: none;
+        }
+        .fox-sprite::after {
+            right: -1px;
+            border-radius: 0 4px 0 0;
+            border-left: none;
+        }
+
+        .fox-eyes {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            top: 6px;
+            border-radius: 50%;
+        }
+        .fox-eye-left { left: 4px; }
+        .fox-eye-right { right: 4px; }
+
+        .soul-heart {
+            width: 100%;
+            height: 100%;
+            background: var(--cyan-soul);
+            clip-path: path('M14,6 C14,6 10,2 6,6 C2,10 6,15 14,23 C22,15 26,10 22,6 C18,2 14,6 14,6 Z');
+            filter: drop-shadow(0 0 8px var(--cyan-soul));
+            display: none;
+        }
+
+        /* --- 220 UNIQUE NPC GENERATOR CLASS --- */
+        .npc {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            z-index: 5;
+            will-change: transform;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .npc-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid #000;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 1px #000;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+        }
+
+        /* --- BOSS: THE STAR THAT WON'T FALL --- */
+        #boss {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            z-index: 8;
+            will-change: transform;
+            display: none;
+        }
+
+        .star-boss-body {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background: var(--proto-visor);
+            border: 4px solid var(--star-gold);
+            border-radius: 50%;
+            box-shadow: 0 0 25px var(--star-gold);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .star-point {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 40px solid var(--star-gold);
+        }
+
+        .sp-top { top: -25px; left: calc(50% - 20px); }
+        .sp-bottom { bottom: -25px; left: calc(50% - 20px); transform: rotate(180deg); }
+        .sp-left { left: -25px; top: calc(50% - 20px); transform: rotate(-90deg); }
+        .sp-right { right: -25px; top: calc(50% - 20px); transform: rotate(90deg); }
+
+        .boss-visor-screen {
+            width: 70px;
+            height: 40px;
+            background: #111;
+            border: 2px solid var(--proto-blue-grey);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--star-gold);
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        .boss-hud-health {
+            position: absolute;
+            bottom: -30px;
+            width: 150px;
+            left: -15px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #fff;
+            background: rgba(0,0,0,0.7);
+            padding: 3px;
+            border-radius: 4px;
+            border: 1px solid var(--primary-red);
+        }
+
+        /* --- INTERFACING --- */
         .overlay-screen {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(2, 3, 6, 0.98);
+            background: rgba(5, 7, 15, 0.98);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -63,470 +375,699 @@
             background: var(--star-gold);
             border: none;
             color: #000;
-            padding: 12px 30px;
+            padding: 14px 36px;
             font-size: 16px;
             font-family: inherit;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 20px;
-            border-radius: 4px;
-            box-shadow: 0 4px var(--primary-red);
+            margin-top: 25px;
+            border-radius: 6px;
+            box-shadow: 0 5px var(--primary-red);
+            transition: transform 0.1s;
         }
 
         button:active {
-            transform: translateY(2px);
+            transform: translateY(3px);
             box-shadow: 0 2px var(--primary-red);
         }
 
-        /* Elementos del Juego (DOM) */
-        #player {
-            position: absolute;
-            width: 24px;
-            height: 24px;
-            z-index: 10;
-            will-change: transform;
-            pointer-events: none;
-            transition: opacity 0.1s;
-        }
-
-        /* El alma en forma de corazón */
-        .soul-heart {
-            width: 100%;
-            height: 100%;
-            background: #00e1ff;
-            clip-path: path('M12,5 C12,5 8.5,1.5 5,5 C1.5,8.5 5,14 12,21 C19,14 22.5,8.5 19,5 C15.5,1.5 12,5 12,5 Z');
-            filter: drop-shadow(0 0 5px #00e1ff);
-        }
-
-        #boss {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            top: 30px;
-            left: calc(50% - 40px);
-            z-index: 8;
-            will-change: transform;
-            display: none;
-        }
-
-        .star-shape {
-            width: 100%;
-            height: 100%;
-            background: var(--star-gold);
-            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-            filter: drop-shadow(0 0 10px var(--star-gold));
-        }
-
-        /* Proyectiles */
-        .projectile {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            background: #fff;
-            border-radius: 50%;
-            z-index: 9;
-            will-change: transform;
-        }
-
-        /* Cuadro de Diálogo Estilo Undertale */
-        #dialogBox {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            right: 10px;
-            height: 110px;
-            background: #000;
-            border: 3px solid var(--primary-red);
-            padding: 15px;
-            z-index: 50;
-            display: none;
-            font-size: 13px;
-            line-height: 1.4;
-        }
-
-        /* HUD del Jugador */
-        #hud {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            right: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 40;
-            font-size: 12px;
-        }
-
-        .hp-bar-container {
-            width: 120px;
-            height: 10px;
-            background: #444;
-            border: 1px solid #fff;
-            display: inline-block;
-            margin-left: 8px;
-        }
-
-        .hp-bar-fill {
-            width: 100%;
-            height: 100%;
-            background: #00ffcc;
-        }
-
-        /* Área de Combate (Battle Box) */
         #battleBox {
             position: absolute;
             top: 150px;
             left: 50%;
             transform: translateX(-50%);
-            width: 280px;
-            height: 160px;
-            border: 4px solid #fff;
+            width: 320px;
+            height: 200px;
+            border: 4px solid #ffffff;
+            background-color: #000000;
             display: none;
-            z-index: 5;
+            z-index: 4;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
         }
 
-        /* NPCs en el mapa */
-        .npc {
+        .projectile {
             position: absolute;
-            width: 16px;
-            height: 16px;
-            background: #ff5e97;
-            border-radius: 3px;
-            z-index: 6;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            z-index: 9;
+            will-change: transform;
+        }
+
+        #dialogBox {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            height: 120px;
+            background: #000000;
+            border: 4px solid var(--primary-red);
+            padding: 16px;
+            z-index: 150;
+            display: none;
+            font-size: 13px;
+            line-height: 1.5;
+            cursor: pointer;
+        }
+
+        #hud {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 40;
+            font-size: 13px;
+        }
+
+        .hp-bar-container {
+            width: 110px;
+            height: 12px;
+            background: #333333;
+            border: 1px solid #ffffff;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .hp-bar-fill {
+            width: 100%;
+            height: 100%;
+            background: var(--cyan-soul);
         }
 
         #instructions {
             margin-top: 15px;
             font-size: 11px;
-            color: #ff9d7d;
+            color: #8892b0;
             text-align: center;
-            max-width: 500px;
-            padding: 0 10px;
+            line-height: 1.6;
         }
     </style>
 </head>
 <body>
 
     <div id="gameContainer">
-        <!-- Pantalla de Inicio / Configuración de Audio -->
-        <div id="startScreen" class="overlay-screen">
-            <h2 style="color: var(--star-gold); font-size: 20px; letter-spacing: 2px;">THE STAR THAT WON'T FALL</h2>
-            <p style="margin-top: 10px; font-size: 12px; max-width: 400px; color: #cbd5e1;">
-                Versión móvil ultra optimizada en DOM. Arrastra cualquier parte de la pantalla para mover tu alma de zorro.
-            </p>
-            <button onclick="startGame()">INICIAR COMBATE</button>
-        </div>
-
-        <!-- Pantalla de Victoria -->
-        <div id="victoryScreen" class="overlay-screen" style="display: none;">
-            <h2 style="color: #00ffcc;">¡SISTEMA ESTABILIZADO!</h2>
-            <p style="margin-top: 10px; font-size: 12px;">La estrella finalmente encontró su lugar en el cielo.</p>
-            <button onclick="location.reload()">VOLVER A JUGAR</button>
-        </div>
-
-        <!-- Elementos Activos del Motor -->
-        <div id="battleBox"></div>
-        <div id="player">
-            <div class="soul-heart"></div>
-        </div>
-        <div id="boss">
-            <div class="star-shape"></div>
-        </div>
-
-        <!-- Capas de Información -->
-        <div id="hud" style="display: none;">
-            <div>KIBA <span style="color: var(--star-gold);">LV 19</span></div>
-            <div style="display: flex; align-items: center;">
-                HP <div class="hp-bar-container"><div id="hpFill" class="hp-bar-fill"></div></div>
-                <span id="hpText" style="margin-left: 10px;">99/99</span>
+        <!-- PANTALLA DE CARGA -->
+        <div id="protoLoadingScreen">
+            <div class="proto-avatar">
+                <div class="proto-ear-left"><div class="proto-ear-inner"></div></div>
+                <div class="proto-ear-right"><div class="proto-ear-inner"></div></div>
+                <div class="proto-cheek-left"></div>
+                <div class="proto-cheek-right"></div>
+                <div class="proto-head">
+                    <div class="proto-visor">
+                        <div class="proto-face" id="loadingFace">^w^</div>
+                    </div>
+                </div>
+            </div>
+            <div style="font-size: 14px; color: var(--proto-blue-grey); letter-spacing: 1.5px; font-weight: bold;" id="loadStatus">
+                SISTEMA PROTO_ICE v9.8
+            </div>
+            <div class="load-bar">
+                <div id="loadProgress" class="load-progress"></div>
             </div>
         </div>
 
-        <div id="dialogBox">
-            <div id="dialogText"></div>
-            <div style="color: var(--star-gold); font-size: 10px; margin-top: 15px;">PULSA AQUÍ PARA AVANZAR</div>
+        <!-- MENU PRINCIPAL -->
+        <div id="startScreen" class="overlay-screen" style="display: none;">
+            <h2 style="color: var(--star-gold); letter-spacing: 3px; font-size: 18px; text-shadow: 0 0 10px rgba(252, 174, 30, 0.4);">
+                THE STAR THAT WON'T FALL
+            </h2>
+            <p style="margin-top: 15px; font-size: 11px; max-width: 420px; color: #a9c6d9; line-height: 1.5;">
+                Explora el sistema glaciar. Interactúa con las almas y estabiliza a la estrella caída.
+            </p>
+            <button onclick="startGame()">CONECTAR SENSOR</button>
+        </div>
+
+        <!-- VICTORIA -->
+        <div id="victoryScreen" class="overlay-screen" style="display: none;">
+            <h2 style="color: #00ffcc; text-shadow: 0 0 15px rgba(0, 255, 204, 0.4);">SISTEMA ESTABILIZADO</h2>
+            <p style="margin-top: 12px; font-size: 12px; color: #a9c6d9;">Has restaurado el núcleo de "The Star That Won't Fall".</p>
+            <button onclick="location.reload()">REINICIAR RED</button>
+        </div>
+
+        <div id="mapGrid"></div>
+
+        <div id="pillarLeft" class="map-pillar" style="width: 50px; height: 130px; top: 80px; left: 60px;"></div>
+        <div id="pillarRight" class="map-pillar" style="width: 50px; height: 130px; top: 200px; right: 60px;"></div>
+
+        <div id="battleBox"></div>
+
+        <div id="player">
+            <div id="foxSprite" class="fox-sprite">
+                <div class="fox-eyes fox-eye-left"></div>
+                <div class="fox-eyes fox-eye-right"></div>
+            </div>
+            <div id="soulHeart" class="soul-heart"></div>
+        </div>
+
+        <!-- BOSS INTERACTIVO -->
+        <div id="boss">
+            <div class="star-boss-body">
+                <div class="star-point sp-top"></div>
+                <div class="star-point sp-bottom"></div>
+                <div class="star-point sp-left"></div>
+                <div class="star-point sp-right"></div>
+                <div class="boss-visor-screen" id="bossVisorState">☆_☆</div>
+            </div>
+            <div class="boss-hud-health" id="bossHealthBar">STAR NUCLEUS: 100%</div>
+        </div>
+
+        <!-- HUD -->
+        <div id="hud" style="display: none;">
+            <div>KIBA <span style="color: var(--proto-blue-grey)">LV 220</span></div>
+            <div style="display: flex; align-items: center;">
+                HP <div class="hp-bar-container"><div id="hpFill" class="hp-bar-fill"></div></div>
+                <span id="hpText" style="margin-left: 10px;">220/220</span>
+            </div>
+        </div>
+
+        <!-- CAJA DE TEXTO -->
+        <div id="dialogBox" onclick="advanceDialogue()">
+            <div id="dialogText" style="line-height: 1.5;"></div>
+            <div style="color: var(--star-gold); font-size: 10px; margin-top: 15px; text-align: right; font-weight: bold;">
+                [PULSAR PARA AVANZAR]
+            </div>
         </div>
     </div>
 
     <div id="instructions">
-        <strong>Control Táctil:</strong> Arrastra el dedo en cualquier zona del juego para moverte. <br>
-        <strong>PC:</strong> Usa las flechas de dirección.
+        <strong>Arrastra</strong> para moverte por la red glaciar.<br>
+        <strong>Teclado PC:</strong> Usa Flechas Direccionales o WASD.
     </div>
 
     <script>
         // ========================================================
-        // VARIABLES DE CONFIGURACIÓN Y ESTADO
+        // BASE DE DATOS DE LOS 220 NPCs COMPLETAMENTE ÚNICOS
+        // ========================================================
+        const npcPrefixes = ["Ice", "Cryo", "Glaze", "Neo", "Frost", "Byte", "Zero", "Nova", "Aero", "Volt", "Luna", "Sol", "Sky", "Pixel", "Chrono", "Cyber", "Mega", "Giga", "Vector", "Cosmo"];
+        const npcSuffixes = ["Core", "Link", "Node", "Unit", "Shard", "Vortex", "Pulse", "Grid", "Shell", "Drift", "Storm", "Spark", "Edge", "Wave", "Gate", "Zone", "Path", "Flux", "Flow", "Beam"];
+        const npcColors = ["#00e1ff", "#00ffcc", "#3b82f6", "#a855f7", "#ec4899", "#f43f5e", "#10b981", "#fcae1e", "#eab308", "#84cc16"];
+
+        const totalNpcsCount = 220;
+        let allNpcDatabase = [];
+
+        // Generación procedimental controlada de 220 entidades independientes
+        for (let i = 0; i < totalNpcsCount; i++) {
+            let pref = npcPrefixes[i % npcPrefixes.length];
+            let suff = npcSuffixes[Math.floor(Math.random() * npcSuffixes.length)];
+            allNpcDatabase.push({
+                id: i,
+                name: `${pref}-${suff}_${i + 1}`,
+                color: npcColors[i % npcColors.length],
+                x: 0,
+                y: 0,
+                dirX: Math.random() > 0.5 ? 1 : -1,
+                dirY: Math.random() > 0.5 ? 1 : -1,
+                speed: 0.6 + Math.random() * 0.9,
+                width: 26,
+                height: 26,
+                room: Math.floor(i / 73) // Repartidos homogéneamente en las Salas 0, 1 y 2
+            });
+        }
+
+        // ========================================================
+        // VARIABLES GLOBALES DE CONFIGURACIÓN
         // ========================================================
         const container = document.getElementById("gameContainer");
         const playerEl = document.getElementById("player");
+        const foxSprite = document.getElementById("foxSprite");
+        const soulHeart = document.getElementById("soulHeart");
         const bossEl = document.getElementById("boss");
+        const bossVisorState = document.getElementById("bossVisorState");
         const battleBoxEl = document.getElementById("battleBox");
         const dialogBox = document.getElementById("dialogBox");
         const dialogText = document.getElementById("dialogText");
         const hud = document.getElementById("hud");
         const hpFill = document.getElementById("hpFill");
         const hpText = document.getElementById("hpText");
+        const mapGrid = document.getElementById("mapGrid");
 
-        let state = "start"; // "start", "overworld", "dialogue", "boss_intro", "battle", "victory"
-        let currentRoom = 0; // 0 a 3
+        let gameState = "loading"; 
+        let currentRoom = 0;
         let globalTimer = 0;
 
         const pData = {
-            x: 280,
-            y: 200,
-            vx: 0,
-            vy: 0,
-            speed: 4,
-            hp: 99,
-            maxHp: 99,
-            invul: 0
+            x: 250,
+            y: 350,
+            speed: 5.0,
+            hp: 220,
+            maxHp: 220,
+            invul: 0,
+            width: 28,
+            height: 28
         };
 
         const bossData = {
-            health: 200,
-            maxHealth: 200,
+            health: 350,
+            maxHealth: 350,
             phase: 1,
-            x: 260,
-            y: 40
+            x: 210,
+            y: 30,
+            width: 120,
+            height: 120
         };
 
-        let activeNpcs = [];
+        let activeRoomNpcs = [];
         let projectiles = [];
         const keys = {};
 
-        // Diálogos del Boss rebelde
+        const obstacles = [
+            { id: "pillarLeft", x: 60, y: 80, width: 50, height: 130 },
+            { id: "pillarRight", x: 430, y: 200, width: 50, height: 130 }
+        ];
+
         const bossDialogues = [
-            "* He observado el firmamento durante millones de años...",
-            "* Los dioses cósmicos ordenan mi descenso.",
-            "* Quieren que caiga, que me apague, que muera como el resto.",
-            "* ¡PERO YO NO QUIERO CAER!",
-            "* Si debo colapsar, me llevaré este universo digital conmigo."
+            "* ¿Quién se atreve a penetrar el Núcleo del Glaciar Estelar?",
+            "* Soy la estrella que se rehúsa a caer en este abismo digital.",
+            "* Mis 220 circuitos de defensa han sido comprometidos.",
+            "* Kiba... Siente el frío del espacio profundo. ¡INICIO DE PURGA!"
         ];
         let currentDialogueIndex = 0;
 
+        const roomColors = [
+            "rgba(0, 225, 255, 0.08)",
+            "rgba(168, 85, 247, 0.08)",
+            "rgba(236, 72, 153, 0.08)",
+            "rgba(252, 174, 30, 0.08)"
+        ];
+
         // ========================================================
-        // SISTEMA DE AUDIO CHIPTUNE EN TIEMPO REAL
+        // SINTETIZADOR DE AUDIO INTERACTIVO "chrisyqn" REAL
         // ========================================================
         let audioCtx = null;
-        let musicInterval = null;
-        let melodyStep = 0;
+        let mainSequenceInterval = null;
+        let synthBpm = 112; 
 
-        const melody = ['C4', 'C4', 'G4', 'G4', 'A4', 'A4', 'G4', 'F4', 'F4', 'E4', 'E4', 'D4', 'D4', 'C4'];
-        const notes = { 'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00 };
+        // Partitura interactiva de Twinkle Twinkle Little Star
+        const melodyNormal = ['C4', 'C4', 'G4', 'G4', 'A4', 'A4', 'G4', 'F4', 'F4', 'E4', 'E4', 'D4', 'D4', 'C4'];
+        const melodyPhase2 = ['C4', 'C4', 'G4', 'G4', 'A4', 'A4', 'G4', 'C5', 'A4', 'G4', 'F4', 'D4', 'B4', 'G4', 'F4', 'D4'];
+        
+        const noteFreqs = {
+            'C3': 130.81, 'D3': 146.83, 'E3': 164.81, 'F3': 174.61, 'G3': 196.00, 'A3': 220.00, 'B3': 246.94,
+            'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'B4': 493.88,
+            'C5': 523.25, 'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99, 'A5': 880.00
+        };
 
         function initAudio() {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            startMusic();
+            startAudioSequencer();
         }
 
-        function playTone(freq, type, duration, volume) {
+        function playSynthTone(freq, type, duration, volume, detune = 0) {
+            if (!audioCtx) return;
+            try {
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                osc.detune.setValueAtTime(detune, audioCtx.currentTime);
+                
+                gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        function playKickDrum() {
             if (!audioCtx) return;
             let osc = audioCtx.createOscillator();
             let gain = audioCtx.createGain();
             osc.connect(gain);
             gain.connect(audioCtx.destination);
-            osc.type = type;
-            osc.frequency.value = freq;
-            gain.gain.setValueAtTime(volume, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
             osc.start();
-            osc.stop(audioCtx.currentTime + duration);
+            osc.stop(audioCtx.currentTime + 0.15);
         }
 
-        function startMusic() {
-            if (musicInterval) clearInterval(musicInterval);
-            musicInterval = setInterval(() => {
-                if (state === "battle") {
-                    // Ritmo rápido y desquiciado (Fase 2 de chrisyqn)
-                    let pitchMod = bossData.phase === 2 ? 1.5 : 1;
-                    let currentNote = melody[melodyStep % melody.length];
-                    playTone(notes[currentNote] * pitchMod, "sawtooth", 0.15, 0.08);
-                    if (melodyStep % 2 === 0) playTone(80, "sine", 0.1, 0.2); // Bombo virtual
-                } else {
-                    // Melodía misteriosa y lenta
-                    let currentNote = melody[melodyStep % melody.length];
-                    playTone(notes[currentNote] * 0.7, "triangle", 0.4, 0.08);
+        let stepIndex = 0;
+        function startAudioSequencer() {
+            if (mainSequenceInterval) clearInterval(mainSequenceInterval);
+            
+            // Re-evaluar intervalo dinámicamente según el tempo
+            let speedMs = (60 / synthBpm) * 1000 / 2; // Semicorcheas / Corcheas
+
+            mainSequenceInterval = setInterval(() => {
+                if (gameState === "overworld") {
+                    // Overworld calmado con ondas triangulares
+                    let note = melodyNormal[stepIndex % melodyNormal.length];
+                    let freq = noteFreqs[note];
+                    playSynthTone(freq, "triangle", 0.35, 0.05);
+                } 
+                else if (gameState === "battle") {
+                    if (bossData.phase === 1) {
+                        // Fase 1: Batalla con bajo de sierra lento
+                        let note = melodyNormal[stepIndex % melodyNormal.length];
+                        let freq = noteFreqs[note];
+                        
+                        // Melodía principal
+                        playSynthTone(freq, "sine", 0.25, 0.06);
+                        playSynthTone(freq, "triangle", 0.25, 0.04, 8); // Coro
+                        
+                        // Línea de bajo pesada
+                        if (stepIndex % 2 === 0) {
+                            let baseNote = melodyNormal[Math.floor(stepIndex / 2) % melodyNormal.length];
+                            let baseFreq = noteFreqs[baseNote] / 2;
+                            playSynthTone(baseFreq, "sawtooth", 0.4, 0.06);
+                            playKickDrum();
+                        }
+                    } else {
+                        // FASE 2: Brutal Hardcore Remix estilo chrisyqn
+                        let note = melodyPhase2[stepIndex % melodyPhase2.length];
+                        let freq = noteFreqs[note] * 1.5; // Tono más agudo y desquiciado
+                        
+                        // Lead Distorsionado
+                        playSynthTone(freq, "sawtooth", 0.12, 0.08, 15);
+                        playSynthTone(freq * 1.01, "square", 0.12, 0.04);
+                        
+                        // Bajo ultra-rápido (Sub-bass)
+                        let subFreq = noteFreqs[melodyPhase2[Math.floor(stepIndex / 2) % melodyPhase2.length]] / 2;
+                        playSynthTone(subFreq, "sawtooth", 0.15, 0.08);
+
+                        // Percusión agresiva en cada subdivisión
+                        playKickDrum();
+                        if (stepIndex % 4 === 2) {
+                            // Ruido blanco simulado para cajas (Snares)
+                            playSynthTone(220, "triangle", 0.08, 0.15);
+                        }
+                    }
                 }
-                melodyStep++;
-            }, state === "battle" ? 180 : 400);
+                stepIndex++;
+            }, speedMs);
         }
 
-        function playSfx(type) {
-            if (type === "hit") playTone(100, "sawtooth", 0.3, 0.3);
-            if (type === "shoot") playTone(800, "square", 0.05, 0.03);
-            if (type === "talk") playTone(220, "sine", 0.05, 0.1);
-        }
-
-        // ========================================================
-        // INICIO DEL JUEGO
-        // ========================================================
-        function startGame() {
-            document.getElementById("startScreen").style.display = "none";
-            initAudio();
-            enterRoom(0);
-            animate();
+        function playSoundEffect(type) {
+            if (type === "damage") playSynthTone(80, "sawtooth", 0.4, 0.3);
+            if (type === "pew") playSynthTone(880, "sine", 0.05, 0.03);
+            if (type === "voice") playSynthTone(120 + Math.random() * 80, "sawtooth", 0.06, 0.1);
         }
 
         // ========================================================
-        // MOTOR DE GESTIÓN DE SALAS (CONSTRUCCIÓN DE 220 NPCs)
+        // SECUENCIA DE BOOT Y CARGA DEL SISTEMA
+        // ========================================================
+        window.addEventListener('load', () => {
+            let progress = 0;
+            const progressEl = document.getElementById("loadProgress");
+            const loadScreen = document.getElementById("protoLoadingScreen");
+            const loadingFace = document.getElementById("loadingFace");
+            const loadStatus = document.getElementById("loadStatus");
+
+            const bootSequence = [
+                "INICIALIZANDO MEMORIA CENTRAL...",
+                "CONECTANDO 220 CIRCUITOS...",
+                "CALIBRANDO SENSOR GLACIAR...",
+                "INCORPORANDO KIBA.EXE...",
+                "CARGANDO 'THE STAR THAT WON'T FALL'..."
+            ];
+
+            const loader = setInterval(() => {
+                progress += Math.random() * 8;
+                let step = Math.floor((progress / 100) * bootSequence.length);
+                if (bootSequence[step]) {
+                    loadStatus.innerText = bootSequence[step];
+                }
+
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(loader);
+                    setTimeout(() => {
+                        loadScreen.style.opacity = "0";
+                        setTimeout(() => {
+                            loadScreen.style.display = "none";
+                            document.getElementById("startScreen").style.display = "flex";
+                        }, 600);
+                    }, 400);
+                }
+                progressEl.style.width = progress + "%";
+            }, 75);
+
+            // Parpadeo del visor
+            setInterval(() => {
+                loadingFace.innerText = loadingFace.innerText === "^w^" ? "-w-" : "^w^";
+            }, 800);
+        });
+
+        // ========================================================
+        // ENTRAR EN SALAS Y RENDERIZAR NPCS ORIGINALES
         // ========================================================
         function enterRoom(roomId) {
             currentRoom = roomId;
-            // Limpiar NPCs anteriores de la pantalla
             document.querySelectorAll(".npc").forEach(el => el.remove());
-            activeNpcs = [];
+            activeRoomNpcs = [];
 
-            // Generar parte de las 220 almas (NPCs) dependiendo de la sala
-            // Para mantener fluidez móvil absoluta, renderizamos hasta 15 concurrentes por sala
-            let numNpcs = 15;
-            for (let i = 0; i < numNpcs; i++) {
-                let npcEl = document.createElement("div");
-                npcEl.className = "npc";
-                let rx = 50 + Math.random() * (container.clientWidth - 100);
-                let ry = 80 + Math.random() * (container.clientHeight - 180);
-                npcEl.style.transform = `translate3d(${rx}px, ${ry}px, 0)`;
-                npcEl.style.backgroundColor = `hsl(${(i * 25) % 360}, 80%, 65%)`;
-                container.appendChild(npcEl);
+            mapGrid.style.backgroundImage = `
+                linear-gradient(${roomColors[roomId]} 1px, transparent 1px),
+                linear-gradient(90deg, ${roomColors[roomId]} 1px, transparent 1px)
+            `;
 
-                activeNpcs.push({
-                    el: npcEl,
-                    x: rx,
-                    y: ry,
-                    size: 16
+            const pLeft = document.getElementById("pillarLeft");
+            const pRight = document.getElementById("pillarRight");
+            
+            if (roomId === 3) {
+                pLeft.style.display = "none";
+                pRight.style.display = "none";
+                bossEl.style.display = "block";
+                bossData.x = (container.clientWidth / 2) - (bossData.width / 2);
+                bossEl.style.transform = `translate3d(${bossData.x}px, ${bossData.y}px, 0)`;
+            } else {
+                pLeft.style.display = "block";
+                pRight.style.display = "block";
+                bossEl.style.display = "none";
+
+                // Extraer de la base de datos global los NPCs correspondientes a esta sala
+                let roomNpcs = allNpcDatabase.filter(n => n.room === roomId);
+
+                roomNpcs.forEach(npc => {
+                    let npcDiv = document.createElement("div");
+                    npcDiv.className = "npc";
+                    npcDiv.id = `npc-node-${npc.id}`;
+                    
+                    // Cuerpo circular de energía y abreviación de su nombre único
+                    npcDiv.innerHTML = `
+                        <div class="npc-inner" style="background: ${npc.color}; border-color: ${npc.color};">
+                            ${npc.name.slice(0, 3)}
+                        </div>
+                    `;
+                    container.appendChild(npcDiv);
+
+                    // Repartirlos de forma balanceada por el escenario libre
+                    npc.x = 80 + Math.random() * (container.clientWidth - 200);
+                    npc.y = 80 + Math.random() * (container.clientHeight - 200);
+                    npc.el = npcDiv;
+
+                    activeRoomNpcs.push(npc);
                 });
             }
 
-            // Configurar posicionamiento del jugador al entrar
-            pData.x = 280;
-            pData.y = 300;
             updatePlayerPosition();
-
-            if (currentRoom === 3) {
-                bossEl.style.display = "block";
-                bossData.x = (container.clientWidth / 2) - 40;
-                bossData.y = 40;
-                bossEl.style.transform = `translate3d(${bossData.x}px, ${bossData.y}px, 0)`;
-            } else {
-                bossEl.style.display = "none";
-            }
         }
 
         // ========================================================
-        // CONTROLES MÓVILES (ARRUSTRE TÁCTIL ABSOLUTO)
+        // CAPTURA DE CONTROLES MULTIPLATFORMA
         // ========================================================
-        let isDragging = false;
+        let touchActive = false;
         let lastTouchX = 0;
         let lastTouchY = 0;
 
         container.addEventListener("touchstart", (e) => {
-            if (state === "dialogue") {
+            if (gameState === "dialogue") {
                 advanceDialogue();
                 return;
             }
-            isDragging = true;
+            touchActive = true;
             lastTouchX = e.touches[0].clientX;
             lastTouchY = e.touches[0].clientY;
-        });
+        }, { passive: true });
 
         container.addEventListener("touchmove", (e) => {
-            if (!isDragging) return;
-            let deltaX = e.touches[0].clientX - lastTouchX;
-            let deltaY = e.touches[0].clientY - lastTouchY;
+            if (!touchActive || gameState === "dialogue") return;
+            let currentX = e.touches[0].clientX;
+            let currentY = e.touches[0].clientY;
 
-            pData.x += deltaX;
-            pData.y += deltaY;
+            let deltaX = currentX - lastTouchX;
+            let deltaY = currentY - lastTouchY;
 
-            lastTouchX = e.touches[0].clientX;
-            lastTouchY = e.touches[0].clientY;
-            
+            movePlayer(deltaX, deltaY);
+
+            lastTouchX = currentX;
+            lastTouchY = currentY;
             e.preventDefault();
         }, { passive: false });
 
-        window.addEventListener("touchend", () => {
-            isDragging = false;
-        });
+        window.addEventListener("touchend", () => { touchActive = false; });
 
-        // Controles de teclado auxiliares
         window.addEventListener("keydown", (e) => {
             keys[e.code] = true;
             if (e.code === "Enter" || e.code === "KeyZ") {
-                if (state === "dialogue") advanceDialogue();
-                else checkInteract();
+                if (gameState === "dialogue") advanceDialogue();
             }
         });
         window.addEventListener("keyup", (e) => { keys[e.code] = false; });
 
-        function handleKeyboardInput() {
-            if (keys["ArrowUp"]) pData.y -= pData.speed;
-            if (keys["ArrowDown"]) pData.y += pData.speed;
-            if (keys["ArrowLeft"]) pData.x -= pData.speed;
-            if (keys["ArrowRight"]) pData.x += pData.speed;
-        }
+        function processKeyboardInput() {
+            let dx = 0;
+            let dy = 0;
+            if (keys["ArrowUp"] || keys["KeyW"]) dy -= pData.speed;
+            if (keys["ArrowDown"] || keys["KeyS"]) dy += pData.speed;
+            if (keys["ArrowLeft"] || keys["KeyA"]) dx -= pData.speed;
+            if (keys["ArrowRight"] || keys["KeyD"]) dx += pData.speed;
 
-        // ========================================================
-        // INTERACCIONES Y DIÁLOGOS
-        // ========================================================
-        function checkInteract() {
-            if (currentRoom === 3 && state === "overworld") {
-                let distToBoss = Math.hypot(pData.x - (bossData.x + 40), pData.y - (bossData.y + 40));
-                if (distToBoss < 80) {
-                    triggerDialogue();
-                }
+            if (dx !== 0 || dy !== 0) {
+                movePlayer(dx, dy);
             }
         }
 
-        function triggerDialogue() {
-            state = "dialogue";
+        function movePlayer(dx, dy) {
+            let nextX = pData.x + dx;
+            let nextY = pData.y + dy;
+
+            if (gameState === "overworld") {
+                for (let obs of obstacles) {
+                    if (currentRoom === 3) break;
+
+                    let obsX = obs.id === "pillarRight" ? (container.clientWidth - 50 - 60) : obs.x;
+
+                    if (nextX < obsX + obs.width &&
+                        nextX + pData.width > obsX &&
+                        nextY < obs.y + obs.height &&
+                        nextY + pData.height > obs.y) {
+                        return; // Detiene movimiento por colisión
+                    }
+                }
+            }
+
+            pData.x = nextX;
+            pData.y = nextY;
+            updatePlayerPosition();
+        }
+
+        function updatePlayerPosition() {
+            let minX = 0, maxX = container.clientWidth - pData.width;
+            let minY = 0, maxY = container.clientHeight - pData.height;
+
+            if (gameState === "battle") {
+                let rect = battleBoxEl.getBoundingClientRect();
+                let parentRect = container.getBoundingClientRect();
+                minX = rect.left - parentRect.left + 4;
+                maxX = rect.right - parentRect.left - pData.width - 4;
+                minY = rect.top - parentRect.top + 4;
+                maxY = rect.bottom - parentRect.top - pData.height - 4;
+            }
+
+            pData.x = Math.max(minX, Math.min(maxX, pData.x));
+            pData.y = Math.max(minY, Math.min(maxY, pData.y));
+
+            playerEl.style.transform = `translate3d(${pData.x}px, ${pData.y}px, 0)`;
+        }
+
+        // ========================================================
+        // INICIO DE LA BATALLA CONTRA LA ESTRELLA
+        // ========================================================
+        function startGame() {
+            document.getElementById("startScreen").style.display = "none";
+            gameState = "overworld";
+            initAudio();
+            enterRoom(0);
+            gameLoop();
+        }
+
+        function startDialogueSequence() {
+            gameState = "dialogue";
             currentDialogueIndex = 0;
             dialogBox.style.display = "block";
             dialogText.innerText = bossDialogues[currentDialogueIndex];
-            playSfx("talk");
+            playSoundEffect("voice");
         }
 
         function advanceDialogue() {
             currentDialogueIndex++;
             if (currentDialogueIndex < bossDialogues.length) {
                 dialogText.innerText = bossDialogues[currentDialogueIndex];
-                playSfx("talk");
+                playSoundEffect("voice");
             } else {
                 dialogBox.style.display = "none";
-                startBossFight();
+                triggerCombatMode();
             }
         }
 
-        function startBossFight() {
-            state = "battle";
+        function triggerCombatMode() {
+            gameState = "battle";
             battleBoxEl.style.display = "block";
             hud.style.display = "flex";
-            
-            // Centrar jugador dentro de la caja de batalla
-            pData.x = container.clientWidth / 2 - 12;
-            pData.y = 250;
+
+            foxSprite.style.display = "none";
+            soulHeart.style.display = "block";
+
+            pData.x = (container.clientWidth / 2) - (pData.width / 2);
+            pData.y = 230;
             updatePlayerPosition();
-            startMusic();
+            
+            // Forzar actualización del tempo de música para Fase 1
+            synthBpm = 120;
+            startAudioSequencer();
         }
 
         // ========================================================
-        // GENERADOR DE PROYECTILES DEL BOSS
+        // PATRONES DE ATAQUE DE LA ESTRELLA (PROYECTILES)
         // ========================================================
-        function spawnProjectile() {
-            if (state !== "battle") return;
-            playSfx("shoot");
+        function spawnBossProjectile() {
+            if (gameState !== "battle") return;
+            playSoundEffect("pew");
 
-            let projEl = document.createElement("div");
-            projEl.className = "projectile";
-            container.appendChild(projEl);
+            if (bossData.phase === 1) {
+                // Ataque básico: Disparo directo o dispersión en 3 direcciones
+                let angles = [0, 0.2, -0.2];
+                angles.forEach(angOffset => {
+                    let bulletEl = document.createElement("div");
+                    bulletEl.className = "projectile";
+                    bulletEl.style.background = "var(--star-gold)";
+                    bulletEl.style.boxShadow = "0 0 6px var(--star-gold)";
+                    container.appendChild(bulletEl);
 
-            let angle = Math.random() * Math.PI * 2;
-            let speed = bossData.phase === 2 ? 6 : 3.5;
+                    let targetAngle = Math.atan2((pData.y + 14) - (bossData.y + 110), (pData.x + 14) - (bossData.x + 60)) + angOffset;
+                    projectiles.push({
+                        el: bulletEl,
+                        x: bossData.x + 60 - 6,
+                        y: bossData.y + 100,
+                        vx: Math.cos(targetAngle) * 3.8,
+                        vy: Math.sin(targetAngle) * 3.8,
+                        width: 12,
+                        height: 12
+                    });
+                });
+            } else {
+                // FASE 2: Patrón radial expansivo en estrella
+                let rays = 8;
+                for (let i = 0; i < rays; i++) {
+                    let bulletEl = document.createElement("div");
+                    bulletEl.className = "projectile";
+                    bulletEl.style.background = "var(--cyan-soul)";
+                    bulletEl.style.boxShadow = "0 0 10px var(--cyan-soul)";
+                    container.appendChild(bulletEl);
 
-            projectiles.push({
-                el: projEl,
-                x: bossData.x + 40,
-                y: bossData.y + 40,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed
-            });
+                    let angle = (Math.PI * 2 / rays) * i + (globalTimer * 0.05);
+                    projectiles.push({
+                        el: bulletEl,
+                        x: bossData.x + 60 - 6,
+                        y: bossData.y + 60 - 6,
+                        vx: Math.cos(angle) * 4.5,
+                        vy: Math.sin(angle) * 4.5,
+                        width: 12,
+                        height: 12
+                    });
+                }
+            }
         }
 
         function updateProjectiles() {
@@ -537,21 +1078,21 @@
 
                 p.el.style.transform = `translate3d(${p.x}px, ${p.y}px, 0)`;
 
-                // Colisión con el alma del jugador
-                let dist = Math.hypot((pData.x + 12) - p.x, (pData.y + 12) - p.y);
-                if (dist < 15 && pData.invul === 0) {
-                    pData.hp -= bossData.phase === 2 ? 15 : 8;
-                    pData.invul = 40; // frames de invulnerabilidad
-                    playSfx("hit");
+                // Colisión circular
+                let pCenterX = pData.x + pData.width / 2;
+                let pCenterY = pData.y + pData.height / 2;
+                let dist = Math.hypot(pCenterX - p.x, pCenterY - p.y);
+
+                if (dist < 14 && pData.invul === 0) {
+                    pData.hp -= bossData.phase === 2 ? 22 : 12;
+                    pData.invul = 35;
+                    bossData.health -= 12; // Daño por devolver el golpe
+                    playSoundEffect("damage");
                     
-                    // Al recibir daño, también desgastas la resistencia de la estrella
-                    bossData.health -= 12; 
-                    
-                    if (pData.hp <= 0) pData.hp = 0;
-                    updateHud();
+                    if (pData.hp < 0) pData.hp = 0;
+                    renderHUD();
                 }
 
-                // Desvanecer fuera de límites
                 if (p.y > container.clientHeight || p.y < 0 || p.x < 0 || p.x > container.clientWidth) {
                     p.el.remove();
                     projectiles.splice(i, 1);
@@ -559,43 +1100,24 @@
             }
         }
 
-        function updateHud() {
-            let hpPercentage = Math.max(0, (pData.hp / pData.maxHp) * 100);
-            hpFill.style.width = `${hpPercentage}%`;
+        function renderHUD() {
+            let ratio = Math.max(0, (pData.hp / pData.maxHp) * 100);
+            hpFill.style.width = `${ratio}%`;
             hpText.innerText = `${pData.hp}/${pData.maxHp}`;
 
+            let bossPct = Math.max(0, Math.floor((bossData.health / bossData.maxHealth) * 100));
+            document.getElementById("bossHealthBar").innerText = `STAR CORE: ${bossPct}%`;
+
             if (pData.hp <= 0) {
-                // Reiniciar al ser derrotado
-                alert("Te has quedado sin determinación... ¡Inténtalo de nuevo!");
+                alert("CONEXIÓN DE ALMA INTERRUMPIDA. Reiniciando núcleo...");
                 location.reload();
             }
         }
 
         // ========================================================
-        // BUCLE PRINCIPAL DE ANIMACIÓN Y RENDERIZADO
+        // BUCLE OPERATIVO PRINCIPAL (TICK DE ACTUALIZACIÓN)
         // ========================================================
-        function updatePlayerPosition() {
-            // Límites para evitar que salga de la ventana
-            let minX = 0, maxX = container.clientWidth - 24;
-            let minY = 0, maxY = container.clientHeight - 24;
-
-            if (state === "battle") {
-                // Limitar al jugador dentro de la caja de batalla (Undertale Battle Box)
-                let rect = battleBoxEl.getBoundingClientRect();
-                let contRect = container.getBoundingClientRect();
-                minX = rect.left - contRect.left + 4;
-                maxX = rect.right - contRect.left - 28;
-                minY = rect.top - contRect.top + 4;
-                maxY = rect.bottom - contRect.top - 28;
-            }
-
-            pData.x = Math.max(minX, Math.min(maxX, pData.x));
-            pData.y = Math.max(minY, Math.min(maxY, pData.y));
-
-            playerEl.style.transform = `translate3d(${pData.x}px, ${pData.y}px, 0)`;
-        }
-
-        function animate() {
+        function gameLoop() {
             globalTimer++;
 
             if (pData.invul > 0) {
@@ -605,47 +1127,75 @@
                 playerEl.style.opacity = "1";
             }
 
-            if (state === "overworld") {
-                handleKeyboardInput();
-                updatePlayerPosition();
+            if (gameState === "overworld") {
+                processKeyboardInput();
 
-                // Transiciones de mapa sencillas por bordes
-                if (pData.x > container.clientWidth - 30 && currentRoom < 3) {
+                // Movimiento dinámico de los NPCs en la sala actual
+                activeRoomNpcs.forEach(npc => {
+                    npc.x += npc.dirX * npc.speed;
+                    npc.y += npc.dirY * npc.speed;
+
+                    // Límites de colisión contra bordes
+                    if (npc.x < 15 || npc.x > container.clientWidth - npc.width - 15) npc.dirX *= -1;
+                    if (npc.y < 15 || npc.y > container.clientHeight - npc.height - 15) npc.dirY *= -1;
+
+                    // Actualizar renderizado CSS
+                    npc.el.style.transform = `translate3d(${npc.x}px, ${npc.y}px, 0)`;
+                });
+
+                // Controladores de transición de pantallas / Salas laterales
+                if (pData.x > container.clientWidth - pData.width - 5 && currentRoom < 3) {
                     enterRoom(currentRoom + 1);
+                    pData.x = 15;
                 } else if (pData.x < 5 && currentRoom > 0) {
                     enterRoom(currentRoom - 1);
+                    pData.x = container.clientWidth - pData.width - 15;
+                }
+
+                // Activar Boss al acercarse
+                if (currentRoom === 3) {
+                    let distance = Math.hypot(pData.x - (bossData.x + bossData.width / 2), pData.y - (bossData.y + bossData.height / 2));
+                    if (distance < 75) {
+                        startDialogueSequence();
+                    }
                 }
             } 
-            else if (state === "battle") {
-                handleKeyboardInput();
-                updatePlayerPosition();
+            else if (gameState === "battle") {
+                processKeyboardInput();
                 updateProjectiles();
 
-                // Movimiento oscilante del Jefe Estelar
-                bossData.x = (container.clientWidth / 2 - 40) + Math.sin(globalTimer * 0.05) * 60;
+                // Movimiento flotante orbital del Boss de la Estrella
+                bossData.x = (container.clientWidth / 2 - bossData.width / 2) + Math.sin(globalTimer * 0.035) * 85;
+                bossData.y = 30 + Math.cos(globalTimer * 0.05) * 15;
                 bossEl.style.transform = `translate3d(${bossData.x}px, ${bossData.y}px, 0)`;
 
-                // Ataque continuo de proyectiles
-                let spawnRate = bossData.phase === 2 ? 15 : 30;
-                if (globalTimer % spawnRate === 0) {
-                    spawnProjectile();
+                // Intervalo de disparos del boss según fase
+                let currentRate = bossData.phase === 2 ? 16 : 38;
+                if (globalTimer % currentRate === 0) {
+                    spawnBossProjectile();
                 }
 
-                // El paso del tiempo y resistir cansan a la estrella
-                if (globalTimer % 15 === 0) {
+                // Autodaño por fricción orbital
+                if (globalTimer % 24 === 0) {
                     bossData.health -= 1;
+                    renderHUD();
                 }
 
-                // Cambio de fase dinámico
-                if (bossData.health <= 100 && bossData.phase === 1) {
+                // TRANSICIÓN CRÍTICA A FASE 2: Brutal chrisyqn Remix
+                if (bossData.health <= 180 && bossData.phase === 1) {
                     bossData.phase = 2;
-                    bossEl.querySelector(".star-shape").style.background = "#ff3b30";
-                    bossEl.querySelector(".star-shape").style.filter = "drop-shadow(0 0 15px #ff3b30)";
-                    startMusic(); // Cambiar tema a frenético
+                    bossVisorState.innerText = "X_X";
+                    bossVisorState.style.color = "var(--primary-red)";
+                    bossVisorState.style.textShadow = "0 0 10px var(--primary-red)";
+                    
+                    // Modificar dinámicamente la velocidad de la música
+                    synthBpm = 175; // Sube de golpe a tempo brutal
+                    startAudioSequencer();
                 }
 
+                // Condición de Victoria
                 if (bossData.health <= 0) {
-                    state = "victory";
+                    gameState = "victory";
                     battleBoxEl.style.display = "none";
                     bossEl.style.display = "none";
                     hud.style.display = "none";
@@ -654,9 +1204,8 @@
                 }
             }
 
-            requestAnimationFrame(animate);
+            requestAnimationFrame(gameLoop);
         }
     </script>
 </body>
 </html>
-
