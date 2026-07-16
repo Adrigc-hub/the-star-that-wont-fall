@@ -2,1210 +2,318 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Star That Won't Fall - 220 Unique Souls Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tundra Tales</title>
     <style>
-        :root {
-            --primary-red: #ff3b30;
-            --star-gold: #fcae1e;
-            --bg-dark: #05070f;
-            --proto-white: #eef5f9;
-            --proto-blue-grey: #a9c6d9;
-            --proto-dark: #1b2631;
-            --proto-gold: #fcae1e;
-            --proto-visor: #0d1117;
-            --cyan-soul: #00e1ff;
-        }
-
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: none;
         }
-
         body {
-            background-color: #020306;
-            color: #ffffff;
+            background-color: #000;
+            color: #fff;
             font-family: 'Courier New', Courier, monospace;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            min-height: 100vh;
+            align-items: center;
+            height: 100vh;
             overflow: hidden;
         }
-
         #gameContainer {
             position: relative;
-            width: 100vw;
-            max-width: 540px;
-            height: 80vh;
-            max-height: 540px;
-            border: 4px solid var(--primary-red);
-            background-color: var(--bg-dark);
-            overflow: hidden;
-            box-shadow: 0 0 35px rgba(255, 59, 48, 0.25);
+            width: 640px;
+            height: 480px;
+            border: 4px solid #fff;
         }
-
-        #mapGrid {
-            position: absolute;
-            width: 200%;
-            height: 200%;
-            top: -50%;
-            left: -50%;
-            background-image: 
-                linear-gradient(rgba(255, 59, 48, 0.08) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 59, 48, 0.08) 1px, transparent 1px);
-            background-size: 32px 32px;
-            z-index: 1;
-            transition: background-image 0.5s ease;
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            /* Clave para mantener el estilo Pixel Art nítido */
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
         }
-
-        .map-pillar {
+        /* Pantalla de Carga */
+        #loadingScreen {
             position: absolute;
-            background: #111625;
-            border: 3px solid var(--proto-blue-grey);
-            border-radius: 6px;
-            z-index: 3;
-            box-shadow: 0 0 10px rgba(169, 198, 217, 0.2);
-        }
-
-        /* --- LOADING SCREEN --- */
-        #protoLoadingScreen {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: #090c15;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 200;
-            transition: opacity 0.6s ease;
-        }
-
-        .proto-avatar {
-            width: 140px;
-            height: 140px;
-            position: relative;
-            margin-bottom: 25px;
-        }
-
-        .proto-ear-left, .proto-ear-right {
-            position: absolute;
-            width: 32px;
-            height: 70px;
-            background: var(--proto-white);
-            border: 3px solid #000;
-            border-radius: 50% 50% 0 0;
-            top: 5px;
-        }
-        .proto-ear-left {
-            left: 15px;
-            transform: rotate(-28deg);
-            border-left: 6px solid var(--proto-blue-grey);
-        }
-        .proto-ear-right {
-            right: 15px;
-            transform: rotate(28deg);
-            border-right: 6px solid var(--proto-blue-grey);
-        }
-        .proto-ear-inner {
-            width: 12px;
-            height: 40px;
-            background: var(--proto-gold);
-            margin: 10px auto 0 auto;
-            border-radius: 50% 50% 0 0;
-        }
-
-        .proto-head {
-            position: absolute;
-            width: 86px;
-            height: 80px;
-            background: var(--proto-white);
-            border-radius: 24px;
-            bottom: 10px;
-            left: 27px;
-            border: 4px solid #000;
-            box-shadow: inset 0 -8px 0 var(--proto-blue-grey);
-        }
-
-        .proto-cheek-left, .proto-cheek-right {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: var(--proto-white);
-            border: 3px solid #000;
-            bottom: 22px;
-            z-index: -1;
-        }
-        .proto-cheek-left {
-            left: 15px;
-            transform: rotate(-45deg);
-            border-right: none;
-            border-top: none;
-        }
-        .proto-cheek-right {
-            right: 15px;
-            transform: rotate(45deg);
-            border-left: none;
-            border-top: none;
-        }
-
-        .proto-visor {
-            position: absolute;
-            width: 66px;
-            height: 44px;
-            background: var(--proto-visor);
-            border-radius: 16px;
-            top: 14px;
-            left: 6px;
-            border: 3px solid var(--proto-gold);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .proto-face {
-            color: var(--proto-gold);
-            font-size: 16px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            animation: blinkEyes 3s infinite;
-        }
-
-        @keyframes blinkEyes {
-            0%, 90%, 100% { content: "^w^"; opacity: 1; }
-            95% { opacity: 0; }
-        }
-
-        .load-bar {
-            width: 220px;
-            height: 12px;
-            border: 2px solid var(--proto-blue-grey);
-            background: #000;
-            border-radius: 6px;
-            overflow: hidden;
-            margin-top: 15px;
-            box-shadow: 0 0 10px rgba(169, 198, 217, 0.3);
-        }
-
-        .load-progress {
-            width: 0%;
-            height: 100%;
-            background: var(--proto-gold);
-            transition: width 0.08s linear;
-        }
-
-        /* --- PLAYER SPRITES --- */
-        #player {
-            position: absolute;
-            width: 28px;
-            height: 28px;
             z-index: 10;
-            will-change: transform;
-            pointer-events: none;
+            transition: opacity 1s ease;
         }
-
-        .fox-sprite {
-            width: 100%;
-            height: 100%;
-            background: #d35400; 
-            border-radius: 6px;
-            position: relative;
-            border: 2px solid #000;
-            box-shadow: inset 0 -4px 0 #a04000;
-        }
-
-        .fox-sprite::before, .fox-sprite::after {
-            content: '';
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background: #d35400;
-            top: -7px;
-            border: 2px solid #000;
-        }
-        .fox-sprite::before {
-            left: -1px;
-            border-radius: 4px 0 0 0;
-            border-right: none;
-        }
-        .fox-sprite::after {
-            right: -1px;
-            border-radius: 0 4px 0 0;
-            border-left: none;
-        }
-
-        .fox-eyes {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: #fff;
-            top: 6px;
-            border-radius: 50%;
-        }
-        .fox-eye-left { left: 4px; }
-        .fox-eye-right { right: 4px; }
-
-        .soul-heart {
-            width: 100%;
-            height: 100%;
-            background: var(--cyan-soul);
-            clip-path: path('M14,6 C14,6 10,2 6,6 C2,10 6,15 14,23 C22,15 26,10 22,6 C18,2 14,6 14,6 Z');
-            filter: drop-shadow(0 0 8px var(--cyan-soul));
-            display: none;
-        }
-
-        /* --- 220 UNIQUE NPC GENERATOR CLASS --- */
-        .npc {
-            position: absolute;
-            width: 32px;
-            height: 32px;
-            z-index: 5;
-            will-change: transform;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .npc-inner {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 2px solid #000;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 8px;
-            font-weight: bold;
-            color: #fff;
-            text-shadow: 1px 1px 1px #000;
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
-        }
-
-        /* --- BOSS: THE STAR THAT WON'T FALL --- */
-        #boss {
-            position: absolute;
-            width: 120px;
-            height: 120px;
-            z-index: 8;
-            will-change: transform;
-            display: none;
-        }
-
-        .star-boss-body {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            background: var(--proto-visor);
-            border: 4px solid var(--star-gold);
-            border-radius: 50%;
-            box-shadow: 0 0 25px var(--star-gold);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .star-point {
-            position: absolute;
-            width: 0;
-            height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-bottom: 40px solid var(--star-gold);
-        }
-
-        .sp-top { top: -25px; left: calc(50% - 20px); }
-        .sp-bottom { bottom: -25px; left: calc(50% - 20px); transform: rotate(180deg); }
-        .sp-left { left: -25px; top: calc(50% - 20px); transform: rotate(-90deg); }
-        .sp-right { right: -25px; top: calc(50% - 20px); transform: rotate(90deg); }
-
-        .boss-visor-screen {
-            width: 70px;
-            height: 40px;
-            background: #111;
-            border: 2px solid var(--proto-blue-grey);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--star-gold);
+        .loading-text {
             font-size: 20px;
-            font-weight: bold;
-            z-index: 2;
-        }
-
-        .boss-hud-health {
-            position: absolute;
-            bottom: -30px;
-            width: 150px;
-            left: -15px;
+            margin-top: 20px;
+            letter-spacing: 2px;
             text-align: center;
-            font-size: 11px;
-            font-weight: bold;
-            color: #fff;
-            background: rgba(0,0,0,0.7);
-            padding: 3px;
-            border-radius: 4px;
-            border: 1px solid var(--primary-red);
-        }
-
-        /* --- INTERFACING --- */
-        .overlay-screen {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(5, 7, 15, 0.98);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            text-align: center;
-            padding: 20px;
-        }
-
-        button {
-            background: var(--star-gold);
-            border: none;
-            color: #000;
-            padding: 14px 36px;
-            font-size: 16px;
-            font-family: inherit;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 25px;
-            border-radius: 6px;
-            box-shadow: 0 5px var(--primary-red);
-            transition: transform 0.1s;
-        }
-
-        button:active {
-            transform: translateY(3px);
-            box-shadow: 0 2px var(--primary-red);
-        }
-
-        #battleBox {
-            position: absolute;
-            top: 150px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 320px;
-            height: 200px;
-            border: 4px solid #ffffff;
-            background-color: #000000;
-            display: none;
-            z-index: 4;
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
-        }
-
-        .projectile {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            z-index: 9;
-            will-change: transform;
-        }
-
-        #dialogBox {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            height: 120px;
-            background: #000000;
-            border: 4px solid var(--primary-red);
-            padding: 16px;
-            z-index: 150;
-            display: none;
-            font-size: 13px;
-            line-height: 1.5;
-            cursor: pointer;
-        }
-
-        #hud {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 40;
-            font-size: 13px;
-        }
-
-        .hp-bar-container {
-            width: 110px;
-            height: 12px;
-            background: #333333;
-            border: 1px solid #ffffff;
-            display: inline-block;
-            margin-left: 10px;
-        }
-
-        .hp-bar-fill {
-            width: 100%;
-            height: 100%;
-            background: var(--cyan-soul);
-        }
-
-        #instructions {
-            margin-top: 15px;
-            font-size: 11px;
-            color: #8892b0;
-            text-align: center;
-            line-height: 1.6;
         }
     </style>
 </head>
 <body>
 
-    <div id="gameContainer">
-        <!-- PANTALLA DE CARGA -->
-        <div id="protoLoadingScreen">
-            <div class="proto-avatar">
-                <div class="proto-ear-left"><div class="proto-ear-inner"></div></div>
-                <div class="proto-ear-right"><div class="proto-ear-inner"></div></div>
-                <div class="proto-cheek-left"></div>
-                <div class="proto-cheek-right"></div>
-                <div class="proto-head">
-                    <div class="proto-visor">
-                        <div class="proto-face" id="loadingFace">^w^</div>
-                    </div>
-                </div>
-            </div>
-            <div style="font-size: 14px; color: var(--proto-blue-grey); letter-spacing: 1.5px; font-weight: bold;" id="loadStatus">
-                SISTEMA PROTO_ICE v9.8
-            </div>
-            <div class="load-bar">
-                <div id="loadProgress" class="load-progress"></div>
-            </div>
-        </div>
-
-        <!-- MENU PRINCIPAL -->
-        <div id="startScreen" class="overlay-screen" style="display: none;">
-            <h2 style="color: var(--star-gold); letter-spacing: 3px; font-size: 18px; text-shadow: 0 0 10px rgba(252, 174, 30, 0.4);">
-                THE STAR THAT WON'T FALL
-            </h2>
-            <p style="margin-top: 15px; font-size: 11px; max-width: 420px; color: #a9c6d9; line-height: 1.5;">
-                Explora el sistema glaciar. Interactúa con las almas y estabiliza a la estrella caída.
-            </p>
-            <button onclick="startGame()">CONECTAR SENSOR</button>
-        </div>
-
-        <!-- VICTORIA -->
-        <div id="victoryScreen" class="overlay-screen" style="display: none;">
-            <h2 style="color: #00ffcc; text-shadow: 0 0 15px rgba(0, 255, 204, 0.4);">SISTEMA ESTABILIZADO</h2>
-            <p style="margin-top: 12px; font-size: 12px; color: #a9c6d9;">Has restaurado el núcleo de "The Star That Won't Fall".</p>
-            <button onclick="location.reload()">REINICIAR RED</button>
-        </div>
-
-        <div id="mapGrid"></div>
-
-        <div id="pillarLeft" class="map-pillar" style="width: 50px; height: 130px; top: 80px; left: 60px;"></div>
-        <div id="pillarRight" class="map-pillar" style="width: 50px; height: 130px; top: 200px; right: 60px;"></div>
-
-        <div id="battleBox"></div>
-
-        <div id="player">
-            <div id="foxSprite" class="fox-sprite">
-                <div class="fox-eyes fox-eye-left"></div>
-                <div class="fox-eyes fox-eye-right"></div>
-            </div>
-            <div id="soulHeart" class="soul-heart"></div>
-        </div>
-
-        <!-- BOSS INTERACTIVO -->
-        <div id="boss">
-            <div class="star-boss-body">
-                <div class="star-point sp-top"></div>
-                <div class="star-point sp-bottom"></div>
-                <div class="star-point sp-left"></div>
-                <div class="star-point sp-right"></div>
-                <div class="boss-visor-screen" id="bossVisorState">☆_☆</div>
-            </div>
-            <div class="boss-hud-health" id="bossHealthBar">STAR NUCLEUS: 100%</div>
-        </div>
-
-        <!-- HUD -->
-        <div id="hud" style="display: none;">
-            <div>KIBA <span style="color: var(--proto-blue-grey)">LV 220</span></div>
-            <div style="display: flex; align-items: center;">
-                HP <div class="hp-bar-container"><div id="hpFill" class="hp-bar-fill"></div></div>
-                <span id="hpText" style="margin-left: 10px;">220/220</span>
-            </div>
-        </div>
-
-        <!-- CAJA DE TEXTO -->
-        <div id="dialogBox" onclick="advanceDialogue()">
-            <div id="dialogText" style="line-height: 1.5;"></div>
-            <div style="color: var(--star-gold); font-size: 10px; margin-top: 15px; text-align: right; font-weight: bold;">
-                [PULSAR PARA AVANZAR]
-            </div>
-        </div>
+<div id="gameContainer">
+    <!-- Pantalla de carga con el Protogen -->
+    <div id="loadingScreen">
+        <canvas id="loadingCanvas" width="160" height="120"></canvas>
+        <div class="loading-text" id="loadingText">INICIANDO SISTEMA...</div>
     </div>
+    
+    <!-- Lienzo del juego principal -->
+    <canvas id="gameCanvas" width="320" height="240"></canvas>
+</div>
 
-    <div id="instructions">
-        <strong>Arrastra</strong> para moverte por la red glaciar.<br>
-        <strong>Teclado PC:</strong> Usa Flechas Direccionales o WASD.
-    </div>
+<script>
+// --- CONFIGURACIÓN GENERAL ---
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const loadCanvas = document.getElementById('loadingCanvas');
+const loadCtx = loadCanvas.getContext('2d');
+const loadingScreen = document.getElementById('loadingScreen');
+const loadingText = document.getElementById('loadingText');
 
-    <script>
-        // ========================================================
-        // BASE DE DATOS DE LOS 220 NPCs COMPLETAMENTE ÚNICOS
-        // ========================================================
-        const npcPrefixes = ["Ice", "Cryo", "Glaze", "Neo", "Frost", "Byte", "Zero", "Nova", "Aero", "Volt", "Luna", "Sol", "Sky", "Pixel", "Chrono", "Cyber", "Mega", "Giga", "Vector", "Cosmo"];
-        const npcSuffixes = ["Core", "Link", "Node", "Unit", "Shard", "Vortex", "Pulse", "Grid", "Shell", "Drift", "Storm", "Spark", "Edge", "Wave", "Gate", "Zone", "Path", "Flux", "Flow", "Beam"];
-        const npcColors = ["#00e1ff", "#00ffcc", "#3b82f6", "#a855f7", "#ec4899", "#f43f5e", "#10b981", "#fcae1e", "#eab308", "#84cc16"];
+// Desactivar suavizado de imágenes para pixel art en JS
+ctx.imageSmoothingEnabled = false;
+loadCtx.imageSmoothingEnabled = false;
 
-        const totalNpcsCount = 220;
-        let allNpcDatabase = [];
+// --- ESTADOS DEL JUEGO ---
+let gameState = "LOADING"; 
+let keys = {};
 
-        // Generación procedimental controlada de 220 entidades independientes
-        for (let i = 0; i < totalNpcsCount; i++) {
-            let pref = npcPrefixes[i % npcPrefixes.length];
-            let suff = npcSuffixes[Math.floor(Math.random() * npcSuffixes.length)];
-            allNpcDatabase.push({
-                id: i,
-                name: `${pref}-${suff}_${i + 1}`,
-                color: npcColors[i % npcColors.length],
-                x: 0,
-                y: 0,
-                dirX: Math.random() > 0.5 ? 1 : -1,
-                dirY: Math.random() > 0.5 ? 1 : -1,
-                speed: 0.6 + Math.random() * 0.9,
-                width: 26,
-                height: 26,
-                room: Math.floor(i / 73) // Repartidos homogéneamente en las Salas 0, 1 y 2
-            });
-        }
+// Escuchar teclado
+window.addEventListener('keydown', e => keys[e.key] = true);
+window.addEventListener('keyup', e => keys[e.key] = false);
 
-        // ========================================================
-        // VARIABLES GLOBALES DE CONFIGURACIÓN
-        // ========================================================
-        const container = document.getElementById("gameContainer");
-        const playerEl = document.getElementById("player");
-        const foxSprite = document.getElementById("foxSprite");
-        const soulHeart = document.getElementById("soulHeart");
-        const bossEl = document.getElementById("boss");
-        const bossVisorState = document.getElementById("bossVisorState");
-        const battleBoxEl = document.getElementById("battleBox");
-        const dialogBox = document.getElementById("dialogBox");
-        const dialogText = document.getElementById("dialogText");
-        const hud = document.getElementById("hud");
-        const hpFill = document.getElementById("hpFill");
-        const hpText = document.getElementById("hpText");
-        const mapGrid = document.getElementById("mapGrid");
+// --- MODELOS PIXEL ART (Renderizados mediante código temporalmente) ---
 
-        let gameState = "loading"; 
-        let currentRoom = 0;
-        let globalTimer = 0;
+// Protogen (Para la pantalla de carga y encuentros)
+function drawProtogen(context, x, y, size) {
+    context.fillStyle = "#222"; // Cuerpo/Orejas mecánicas
+    context.fillRect(x - size, y - size, size * 2, size * 2); // Cabeza base
+    context.fillRect(x - size, y - size * 1.5, size * 0.4, size); // Oreja Izq
+    context.fillRect(x + size * 0.6, y - size * 1.5, size * 0.4, size); // Oreja Der
 
-        const pData = {
-            x: 250,
-            y: 350,
-            speed: 5.0,
-            hp: 220,
-            maxHp: 220,
-            invul: 0,
-            width: 28,
-            height: 28
-        };
+    // Visor LED (Curvo/Inclinado)
+    context.fillStyle = "#0a0a0a";
+    context.strokeStyle = "#00ffcc"; // Contorno brillante (Cyan)
+    context.lineWidth = 2;
+    context.beginPath();
+    context.roundRect(x - size * 0.7, y - size * 0.5, size * 1.5, size * 1.1, 8);
+    context.fill();
+    context.stroke();
 
-        const bossData = {
-            health: 350,
-            maxHealth: 350,
-            phase: 1,
-            x: 210,
-            y: 30,
-            width: 120,
-            height: 120
-        };
+    // Ojos/Expresión digital en el visor (Estilo Sans)
+    context.fillStyle = "#00ffcc";
+    // Ojo Izquierdo parpadeando o estático
+    context.fillRect(x - size * 0.3, y - size * 0.1, 4, 4);
+    // Ojo Derecho "Sans" (Brilla con fuego/energía en la ruta genocida)
+    if (Math.sin(Date.now() / 100) > 0) {
+        context.fillStyle = "#00ffcc";
+    } else {
+        context.fillStyle = "#0088aa";
+    }
+    context.fillRect(x + size * 0.2, y - size * 0.1, 4, 4);
+}
 
-        let activeRoomNpcs = [];
-        let projectiles = [];
-        const keys = {};
-
-        const obstacles = [
-            { id: "pillarLeft", x: 60, y: 80, width: 50, height: 130 },
-            { id: "pillarRight", x: 430, y: 200, width: 50, height: 130 }
-        ];
-
-        const bossDialogues = [
-            "* ¿Quién se atreve a penetrar el Núcleo del Glaciar Estelar?",
-            "* Soy la estrella que se rehúsa a caer en este abismo digital.",
-            "* Mis 220 circuitos de defensa han sido comprometidos.",
-            "* Kiba... Siente el frío del espacio profundo. ¡INICIO DE PURGA!"
-        ];
-        let currentDialogueIndex = 0;
-
-        const roomColors = [
-            "rgba(0, 225, 255, 0.08)",
-            "rgba(168, 85, 247, 0.08)",
-            "rgba(236, 72, 153, 0.08)",
-            "rgba(252, 174, 30, 0.08)"
-        ];
-
-        // ========================================================
-        // SINTETIZADOR DE AUDIO INTERACTIVO "chrisyqn" REAL
-        // ========================================================
-        let audioCtx = null;
-        let mainSequenceInterval = null;
-        let synthBpm = 112; 
-
-        // Partitura interactiva de Twinkle Twinkle Little Star
-        const melodyNormal = ['C4', 'C4', 'G4', 'G4', 'A4', 'A4', 'G4', 'F4', 'F4', 'E4', 'E4', 'D4', 'D4', 'C4'];
-        const melodyPhase2 = ['C4', 'C4', 'G4', 'G4', 'A4', 'A4', 'G4', 'C5', 'A4', 'G4', 'F4', 'D4', 'B4', 'G4', 'F4', 'D4'];
+// Zorro Ártico (Personaje Principal)
+const player = {
+    x: 150,
+    y: 110,
+    width: 16,
+    height: 16,
+    speed: 1.5,
+    color: "#ffffff",
+    draw: function() {
+        // Cuerpo (Blanco)
+        ctx.fillStyle = this.color;
+        ctx.fillRect(this.x, this.y + 4, 16, 12); // Tronco
+        ctx.fillRect(this.x + 3, this.y, 10, 8);  // Cabeza
         
-        const noteFreqs = {
-            'C3': 130.81, 'D3': 146.83, 'E3': 164.81, 'F3': 174.61, 'G3': 196.00, 'A3': 220.00, 'B3': 246.94,
-            'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'B4': 493.88,
-            'C5': 523.25, 'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99, 'A5': 880.00
-        };
+        // Orejas
+        ctx.fillRect(this.x + 3, this.y - 3, 3, 3);
+        ctx.fillRect(this.x + 10, this.y - 3, 3, 3);
 
-        function initAudio() {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            startAudioSequencer();
+        // Cola esponjosa
+        ctx.fillStyle = "#e0f7fa"; 
+        ctx.fillRect(this.x - 6, this.y + 6, 8, 8);
+
+        // Ojos negros y nariz
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(this.x + 5, this.y + 3, 2, 2);
+        ctx.fillRect(this.x + 9, this.y + 3, 2, 2);
+        ctx.fillRect(this.x + 7, this.y + 5, 2, 1); // Nariz
+
+        // Bufanda azul (Detalle único)
+        ctx.fillStyle = "#00bcd4";
+        ctx.fillRect(this.x + 2, this.y + 7, 12, 3);
+        ctx.fillRect(this.x + 10, this.y + 10, 3, 5); // Extremo colgando
+    }
+};
+
+// --- DISEÑO DE MAPAS ORIGINALES (Por zonas temáticas) ---
+const maps = {
+    0: {
+        theme: "TUNDRA_HELADA",
+        bgColor: "#0f172a",
+        obstacles: [
+            {x: 0, y: 0, w: 320, h: 20}, // Límite superior
+            {x: 0, y: 220, w: 320, h: 20}, // Límite inferior
+            {x: 0, y: 20, w: 20, h: 200}, // Límite izquierdo
+            // Rocas de hielo internas
+            {x: 80, y: 60, w: 40, h: 40},
+            {x: 200, y: 120, w: 40, h: 40}
+        ],
+        drawDetails: function() {
+            // Nieve en el suelo
+            ctx.fillStyle = "#1e293b";
+            ctx.fillRect(40, 40, 10, 10);
+            ctx.fillRect(250, 180, 15, 10);
         }
-
-        function playSynthTone(freq, type, duration, volume, detune = 0) {
-            if (!audioCtx) return;
-            try {
-                let osc = audioCtx.createOscillator();
-                let gain = audioCtx.createGain();
-                
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-                osc.detune.setValueAtTime(detune, audioCtx.currentTime);
-                
-                gain.gain.setValueAtTime(volume, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-                
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                
-                osc.start();
-                osc.stop(audioCtx.currentTime + duration);
-            } catch(e) {}
+    },
+    1: {
+        theme: "CUEVA_CRISTAL",
+        bgColor: "#1e1b4b",
+        obstacles: [
+            {x: 0, y: 0, w: 320, h: 20},
+            {x: 0, y: 220, w: 320, h: 20},
+            {x: 300, y: 20, w: 20, h: 200}, // Límite derecho tapado
+            {x: 100, y: 20, w: 30, h: 100}, // Columnas de cristales
+            {x: 180, y: 120, w: 30, h: 100}
+        ],
+        drawDetails: function() {
+            // Cristales brillantes (Cian y violeta)
+            ctx.fillStyle = "#818cf8";
+            ctx.fillRect(110, 40, 10, 20);
+            ctx.fillStyle = "#c084fc";
+            ctx.fillRect(190, 160, 10, 20);
         }
+    }
+};
 
-        function playKickDrum() {
-            if (!audioCtx) return;
-            let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.15);
+let currentMapIndex = 0;
+
+// --- SISTEMA DE COLISIONES ---
+function checkCollision(x, y, width, height) {
+    const obstacles = maps[currentMapIndex].obstacles;
+    for (let obs of obstacles) {
+        if (x < obs.x + obs.w &&
+            x + width > obs.x &&
+            y < obs.y + obs.h &&
+            y + height > obs.y) {
+            return true;
         }
+    }
+    return false;
+}
+
+// --- PANTALLA DE CARGA ACTIVA (CON EL PROTOGEN) ---
+let loadProgress = 0;
+function runLoadingScreen() {
+    loadCtx.fillStyle = "#000000";
+    loadCtx.fillRect(0, 0, loadCanvas.width, loadCanvas.height);
+    
+    // Dibujamos al Protogen en el centro de la pantalla de carga
+    drawProtogen(loadCtx, loadCanvas.width / 2, loadCanvas.height / 2 - 10, 15);
+    
+    // Progreso artificial de carga
+    loadProgress += 0.5;
+    if (loadProgress >= 100) {
+        // Desvanecer pantalla de carga
+        loadingScreen.style.opacity = 0;
+        setTimeout(() => {
+            loadingScreen.style.display = "none";
+            gameState = "PLAYING";
+        }, 1000);
+    } else {
+        loadingText.innerText = "SISTEMA CARGANDO... " + Math.floor(loadProgress) + "%";
+        requestAnimationFrame(runLoadingScreen);
+    }
+}
+
+// --- BUCLE DE JUEGO PRINCIPAL ---
+function update() {
+    if (gameState !== "PLAYING") return;
+
+    let nextX = player.x;
+    let nextY = player.y;
+
+    // Controles de dirección
+    if (keys["ArrowUp"] || keys["w"]) nextY -= player.speed;
+    if (keys["ArrowDown"] || keys["s"]) nextY += player.speed;
+    if (keys["ArrowLeft"] || keys["a"]) nextX -= player.speed;
+    if (keys["ArrowRight"] || keys["d"]) nextX += player.speed;
+
+    // Comprobar colisiones antes de mover
+    if (!checkCollision(nextX, player.y, player.width, player.height)) {
+        player.x = nextX;
+    }
+    if (!checkCollision(player.x, nextY, player.width, player.height)) {
+        player.y = nextY;
+    }
+
+    // --- CAMBIO DE MAPAS (TEMAS ORIGINALES) ---
+    // Si cruza la derecha, pasa al mapa 1 (Cueva de Cristal)
+    if (player.x > 310 && currentMapIndex === 0) {
+        currentMapIndex = 1;
+        player.x = 25; // Aparece al lado izquierdo del nuevo mapa
+    }
+    // Si regresa por la izquierda, vuelve al mapa 0 (Tundra Helada)
+    if (player.x < 10 && currentMapIndex === 1) {
+        currentMapIndex = 0;
+        player.x = 295; // Aparece al lado derecho
+    }
+}
+
+function render() {
+    if (gameState !== "PLAYING") return;
+
+    const currentMap = maps[currentMapIndex];
+
+    // Fondo del mapa actual
+    ctx.fillStyle = currentMap.bgColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Dibujar obstáculos del mapa
+    ctx.fillStyle = "#475569"; // Color de roca / paredes pixeladas
+    currentMap.obstacles.forEach(obs => {
+        ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+        // Borde interior para dar volumen de pixel art
+        ctx.strokeStyle = "#334155";
+        ctx.lineWidth = 1;
+        ctx.strokeRect(obs.x, obs.y, obs.w, obs.h);
+    });
+
+    // Dibujar detalles temáticos de fondo
+    currentMap.drawDetails();
+
+    // Dibujar al Protagonista (Zorro Ártico)
+    player.draw();
+
+    // Dibujar al Protogen si está en el mapa actual (Ejemplo: En la Cueva de Cristal)
+    if (currentMapIndex === 1) {
+        drawProtogen(ctx, 150, 70, 10);
+    }
+}
+
+function gameLoop() {
+    update();
+    render();
+    requestAnimationFrame(gameLoop);
+}
+
+// --- INICIALIZACIÓN ---
+runLoadingScreen();
+gameLoop();
 
-        let stepIndex = 0;
-        function startAudioSequencer() {
-            if (mainSequenceInterval) clearInterval(mainSequenceInterval);
-            
-            // Re-evaluar intervalo dinámicamente según el tempo
-            let speedMs = (60 / synthBpm) * 1000 / 2; // Semicorcheas / Corcheas
-
-            mainSequenceInterval = setInterval(() => {
-                if (gameState === "overworld") {
-                    // Overworld calmado con ondas triangulares
-                    let note = melodyNormal[stepIndex % melodyNormal.length];
-                    let freq = noteFreqs[note];
-                    playSynthTone(freq, "triangle", 0.35, 0.05);
-                } 
-                else if (gameState === "battle") {
-                    if (bossData.phase === 1) {
-                        // Fase 1: Batalla con bajo de sierra lento
-                        let note = melodyNormal[stepIndex % melodyNormal.length];
-                        let freq = noteFreqs[note];
-                        
-                        // Melodía principal
-                        playSynthTone(freq, "sine", 0.25, 0.06);
-                        playSynthTone(freq, "triangle", 0.25, 0.04, 8); // Coro
-                        
-                        // Línea de bajo pesada
-                        if (stepIndex % 2 === 0) {
-                            let baseNote = melodyNormal[Math.floor(stepIndex / 2) % melodyNormal.length];
-                            let baseFreq = noteFreqs[baseNote] / 2;
-                            playSynthTone(baseFreq, "sawtooth", 0.4, 0.06);
-                            playKickDrum();
-                        }
-                    } else {
-                        // FASE 2: Brutal Hardcore Remix estilo chrisyqn
-                        let note = melodyPhase2[stepIndex % melodyPhase2.length];
-                        let freq = noteFreqs[note] * 1.5; // Tono más agudo y desquiciado
-                        
-                        // Lead Distorsionado
-                        playSynthTone(freq, "sawtooth", 0.12, 0.08, 15);
-                        playSynthTone(freq * 1.01, "square", 0.12, 0.04);
-                        
-                        // Bajo ultra-rápido (Sub-bass)
-                        let subFreq = noteFreqs[melodyPhase2[Math.floor(stepIndex / 2) % melodyPhase2.length]] / 2;
-                        playSynthTone(subFreq, "sawtooth", 0.15, 0.08);
-
-                        // Percusión agresiva en cada subdivisión
-                        playKickDrum();
-                        if (stepIndex % 4 === 2) {
-                            // Ruido blanco simulado para cajas (Snares)
-                            playSynthTone(220, "triangle", 0.08, 0.15);
-                        }
-                    }
-                }
-                stepIndex++;
-            }, speedMs);
-        }
-
-        function playSoundEffect(type) {
-            if (type === "damage") playSynthTone(80, "sawtooth", 0.4, 0.3);
-            if (type === "pew") playSynthTone(880, "sine", 0.05, 0.03);
-            if (type === "voice") playSynthTone(120 + Math.random() * 80, "sawtooth", 0.06, 0.1);
-        }
-
-        // ========================================================
-        // SECUENCIA DE BOOT Y CARGA DEL SISTEMA
-        // ========================================================
-        window.addEventListener('load', () => {
-            let progress = 0;
-            const progressEl = document.getElementById("loadProgress");
-            const loadScreen = document.getElementById("protoLoadingScreen");
-            const loadingFace = document.getElementById("loadingFace");
-            const loadStatus = document.getElementById("loadStatus");
-
-            const bootSequence = [
-                "INICIALIZANDO MEMORIA CENTRAL...",
-                "CONECTANDO 220 CIRCUITOS...",
-                "CALIBRANDO SENSOR GLACIAR...",
-                "INCORPORANDO KIBA.EXE...",
-                "CARGANDO 'THE STAR THAT WON'T FALL'..."
-            ];
-
-            const loader = setInterval(() => {
-                progress += Math.random() * 8;
-                let step = Math.floor((progress / 100) * bootSequence.length);
-                if (bootSequence[step]) {
-                    loadStatus.innerText = bootSequence[step];
-                }
-
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(loader);
-                    setTimeout(() => {
-                        loadScreen.style.opacity = "0";
-                        setTimeout(() => {
-                            loadScreen.style.display = "none";
-                            document.getElementById("startScreen").style.display = "flex";
-                        }, 600);
-                    }, 400);
-                }
-                progressEl.style.width = progress + "%";
-            }, 75);
-
-            // Parpadeo del visor
-            setInterval(() => {
-                loadingFace.innerText = loadingFace.innerText === "^w^" ? "-w-" : "^w^";
-            }, 800);
-        });
-
-        // ========================================================
-        // ENTRAR EN SALAS Y RENDERIZAR NPCS ORIGINALES
-        // ========================================================
-        function enterRoom(roomId) {
-            currentRoom = roomId;
-            document.querySelectorAll(".npc").forEach(el => el.remove());
-            activeRoomNpcs = [];
-
-            mapGrid.style.backgroundImage = `
-                linear-gradient(${roomColors[roomId]} 1px, transparent 1px),
-                linear-gradient(90deg, ${roomColors[roomId]} 1px, transparent 1px)
-            `;
-
-            const pLeft = document.getElementById("pillarLeft");
-            const pRight = document.getElementById("pillarRight");
-            
-            if (roomId === 3) {
-                pLeft.style.display = "none";
-                pRight.style.display = "none";
-                bossEl.style.display = "block";
-                bossData.x = (container.clientWidth / 2) - (bossData.width / 2);
-                bossEl.style.transform = `translate3d(${bossData.x}px, ${bossData.y}px, 0)`;
-            } else {
-                pLeft.style.display = "block";
-                pRight.style.display = "block";
-                bossEl.style.display = "none";
-
-                // Extraer de la base de datos global los NPCs correspondientes a esta sala
-                let roomNpcs = allNpcDatabase.filter(n => n.room === roomId);
-
-                roomNpcs.forEach(npc => {
-                    let npcDiv = document.createElement("div");
-                    npcDiv.className = "npc";
-                    npcDiv.id = `npc-node-${npc.id}`;
-                    
-                    // Cuerpo circular de energía y abreviación de su nombre único
-                    npcDiv.innerHTML = `
-                        <div class="npc-inner" style="background: ${npc.color}; border-color: ${npc.color};">
-                            ${npc.name.slice(0, 3)}
-                        </div>
-                    `;
-                    container.appendChild(npcDiv);
-
-                    // Repartirlos de forma balanceada por el escenario libre
-                    npc.x = 80 + Math.random() * (container.clientWidth - 200);
-                    npc.y = 80 + Math.random() * (container.clientHeight - 200);
-                    npc.el = npcDiv;
-
-                    activeRoomNpcs.push(npc);
-                });
-            }
-
-            updatePlayerPosition();
-        }
-
-        // ========================================================
-        // CAPTURA DE CONTROLES MULTIPLATFORMA
-        // ========================================================
-        let touchActive = false;
-        let lastTouchX = 0;
-        let lastTouchY = 0;
-
-        container.addEventListener("touchstart", (e) => {
-            if (gameState === "dialogue") {
-                advanceDialogue();
-                return;
-            }
-            touchActive = true;
-            lastTouchX = e.touches[0].clientX;
-            lastTouchY = e.touches[0].clientY;
-        }, { passive: true });
-
-        container.addEventListener("touchmove", (e) => {
-            if (!touchActive || gameState === "dialogue") return;
-            let currentX = e.touches[0].clientX;
-            let currentY = e.touches[0].clientY;
-
-            let deltaX = currentX - lastTouchX;
-            let deltaY = currentY - lastTouchY;
-
-            movePlayer(deltaX, deltaY);
-
-            lastTouchX = currentX;
-            lastTouchY = currentY;
-            e.preventDefault();
-        }, { passive: false });
-
-        window.addEventListener("touchend", () => { touchActive = false; });
-
-        window.addEventListener("keydown", (e) => {
-            keys[e.code] = true;
-            if (e.code === "Enter" || e.code === "KeyZ") {
-                if (gameState === "dialogue") advanceDialogue();
-            }
-        });
-        window.addEventListener("keyup", (e) => { keys[e.code] = false; });
-
-        function processKeyboardInput() {
-            let dx = 0;
-            let dy = 0;
-            if (keys["ArrowUp"] || keys["KeyW"]) dy -= pData.speed;
-            if (keys["ArrowDown"] || keys["KeyS"]) dy += pData.speed;
-            if (keys["ArrowLeft"] || keys["KeyA"]) dx -= pData.speed;
-            if (keys["ArrowRight"] || keys["KeyD"]) dx += pData.speed;
-
-            if (dx !== 0 || dy !== 0) {
-                movePlayer(dx, dy);
-            }
-        }
-
-        function movePlayer(dx, dy) {
-            let nextX = pData.x + dx;
-            let nextY = pData.y + dy;
-
-            if (gameState === "overworld") {
-                for (let obs of obstacles) {
-                    if (currentRoom === 3) break;
-
-                    let obsX = obs.id === "pillarRight" ? (container.clientWidth - 50 - 60) : obs.x;
-
-                    if (nextX < obsX + obs.width &&
-                        nextX + pData.width > obsX &&
-                        nextY < obs.y + obs.height &&
-                        nextY + pData.height > obs.y) {
-                        return; // Detiene movimiento por colisión
-                    }
-                }
-            }
-
-            pData.x = nextX;
-            pData.y = nextY;
-            updatePlayerPosition();
-        }
-
-        function updatePlayerPosition() {
-            let minX = 0, maxX = container.clientWidth - pData.width;
-            let minY = 0, maxY = container.clientHeight - pData.height;
-
-            if (gameState === "battle") {
-                let rect = battleBoxEl.getBoundingClientRect();
-                let parentRect = container.getBoundingClientRect();
-                minX = rect.left - parentRect.left + 4;
-                maxX = rect.right - parentRect.left - pData.width - 4;
-                minY = rect.top - parentRect.top + 4;
-                maxY = rect.bottom - parentRect.top - pData.height - 4;
-            }
-
-            pData.x = Math.max(minX, Math.min(maxX, pData.x));
-            pData.y = Math.max(minY, Math.min(maxY, pData.y));
-
-            playerEl.style.transform = `translate3d(${pData.x}px, ${pData.y}px, 0)`;
-        }
-
-        // ========================================================
-        // INICIO DE LA BATALLA CONTRA LA ESTRELLA
-        // ========================================================
-        function startGame() {
-            document.getElementById("startScreen").style.display = "none";
-            gameState = "overworld";
-            initAudio();
-            enterRoom(0);
-            gameLoop();
-        }
-
-        function startDialogueSequence() {
-            gameState = "dialogue";
-            currentDialogueIndex = 0;
-            dialogBox.style.display = "block";
-            dialogText.innerText = bossDialogues[currentDialogueIndex];
-            playSoundEffect("voice");
-        }
-
-        function advanceDialogue() {
-            currentDialogueIndex++;
-            if (currentDialogueIndex < bossDialogues.length) {
-                dialogText.innerText = bossDialogues[currentDialogueIndex];
-                playSoundEffect("voice");
-            } else {
-                dialogBox.style.display = "none";
-                triggerCombatMode();
-            }
-        }
-
-        function triggerCombatMode() {
-            gameState = "battle";
-            battleBoxEl.style.display = "block";
-            hud.style.display = "flex";
-
-            foxSprite.style.display = "none";
-            soulHeart.style.display = "block";
-
-            pData.x = (container.clientWidth / 2) - (pData.width / 2);
-            pData.y = 230;
-            updatePlayerPosition();
-            
-            // Forzar actualización del tempo de música para Fase 1
-            synthBpm = 120;
-            startAudioSequencer();
-        }
-
-        // ========================================================
-        // PATRONES DE ATAQUE DE LA ESTRELLA (PROYECTILES)
-        // ========================================================
-        function spawnBossProjectile() {
-            if (gameState !== "battle") return;
-            playSoundEffect("pew");
-
-            if (bossData.phase === 1) {
-                // Ataque básico: Disparo directo o dispersión en 3 direcciones
-                let angles = [0, 0.2, -0.2];
-                angles.forEach(angOffset => {
-                    let bulletEl = document.createElement("div");
-                    bulletEl.className = "projectile";
-                    bulletEl.style.background = "var(--star-gold)";
-                    bulletEl.style.boxShadow = "0 0 6px var(--star-gold)";
-                    container.appendChild(bulletEl);
-
-                    let targetAngle = Math.atan2((pData.y + 14) - (bossData.y + 110), (pData.x + 14) - (bossData.x + 60)) + angOffset;
-                    projectiles.push({
-                        el: bulletEl,
-                        x: bossData.x + 60 - 6,
-                        y: bossData.y + 100,
-                        vx: Math.cos(targetAngle) * 3.8,
-                        vy: Math.sin(targetAngle) * 3.8,
-                        width: 12,
-                        height: 12
-                    });
-                });
-            } else {
-                // FASE 2: Patrón radial expansivo en estrella
-                let rays = 8;
-                for (let i = 0; i < rays; i++) {
-                    let bulletEl = document.createElement("div");
-                    bulletEl.className = "projectile";
-                    bulletEl.style.background = "var(--cyan-soul)";
-                    bulletEl.style.boxShadow = "0 0 10px var(--cyan-soul)";
-                    container.appendChild(bulletEl);
-
-                    let angle = (Math.PI * 2 / rays) * i + (globalTimer * 0.05);
-                    projectiles.push({
-                        el: bulletEl,
-                        x: bossData.x + 60 - 6,
-                        y: bossData.y + 60 - 6,
-                        vx: Math.cos(angle) * 4.5,
-                        vy: Math.sin(angle) * 4.5,
-                        width: 12,
-                        height: 12
-                    });
-                }
-            }
-        }
-
-        function updateProjectiles() {
-            for (let i = projectiles.length - 1; i >= 0; i--) {
-                let p = projectiles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-
-                p.el.style.transform = `translate3d(${p.x}px, ${p.y}px, 0)`;
-
-                // Colisión circular
-                let pCenterX = pData.x + pData.width / 2;
-                let pCenterY = pData.y + pData.height / 2;
-                let dist = Math.hypot(pCenterX - p.x, pCenterY - p.y);
-
-                if (dist < 14 && pData.invul === 0) {
-                    pData.hp -= bossData.phase === 2 ? 22 : 12;
-                    pData.invul = 35;
-                    bossData.health -= 12; // Daño por devolver el golpe
-                    playSoundEffect("damage");
-                    
-                    if (pData.hp < 0) pData.hp = 0;
-                    renderHUD();
-                }
-
-                if (p.y > container.clientHeight || p.y < 0 || p.x < 0 || p.x > container.clientWidth) {
-                    p.el.remove();
-                    projectiles.splice(i, 1);
-                }
-            }
-        }
-
-        function renderHUD() {
-            let ratio = Math.max(0, (pData.hp / pData.maxHp) * 100);
-            hpFill.style.width = `${ratio}%`;
-            hpText.innerText = `${pData.hp}/${pData.maxHp}`;
-
-            let bossPct = Math.max(0, Math.floor((bossData.health / bossData.maxHealth) * 100));
-            document.getElementById("bossHealthBar").innerText = `STAR CORE: ${bossPct}%`;
-
-            if (pData.hp <= 0) {
-                alert("CONEXIÓN DE ALMA INTERRUMPIDA. Reiniciando núcleo...");
-                location.reload();
-            }
-        }
-
-        // ========================================================
-        // BUCLE OPERATIVO PRINCIPAL (TICK DE ACTUALIZACIÓN)
-        // ========================================================
-        function gameLoop() {
-            globalTimer++;
-
-            if (pData.invul > 0) {
-                pData.invul--;
-                playerEl.style.opacity = globalTimer % 4 < 2 ? "0.3" : "1";
-            } else {
-                playerEl.style.opacity = "1";
-            }
-
-            if (gameState === "overworld") {
-                processKeyboardInput();
-
-                // Movimiento dinámico de los NPCs en la sala actual
-                activeRoomNpcs.forEach(npc => {
-                    npc.x += npc.dirX * npc.speed;
-                    npc.y += npc.dirY * npc.speed;
-
-                    // Límites de colisión contra bordes
-                    if (npc.x < 15 || npc.x > container.clientWidth - npc.width - 15) npc.dirX *= -1;
-                    if (npc.y < 15 || npc.y > container.clientHeight - npc.height - 15) npc.dirY *= -1;
-
-                    // Actualizar renderizado CSS
-                    npc.el.style.transform = `translate3d(${npc.x}px, ${npc.y}px, 0)`;
-                });
-
-                // Controladores de transición de pantallas / Salas laterales
-                if (pData.x > container.clientWidth - pData.width - 5 && currentRoom < 3) {
-                    enterRoom(currentRoom + 1);
-                    pData.x = 15;
-                } else if (pData.x < 5 && currentRoom > 0) {
-                    enterRoom(currentRoom - 1);
-                    pData.x = container.clientWidth - pData.width - 15;
-                }
-
-                // Activar Boss al acercarse
-                if (currentRoom === 3) {
-                    let distance = Math.hypot(pData.x - (bossData.x + bossData.width / 2), pData.y - (bossData.y + bossData.height / 2));
-                    if (distance < 75) {
-                        startDialogueSequence();
-                    }
-                }
-            } 
-            else if (gameState === "battle") {
-                processKeyboardInput();
-                updateProjectiles();
-
-                // Movimiento flotante orbital del Boss de la Estrella
-                bossData.x = (container.clientWidth / 2 - bossData.width / 2) + Math.sin(globalTimer * 0.035) * 85;
-                bossData.y = 30 + Math.cos(globalTimer * 0.05) * 15;
-                bossEl.style.transform = `translate3d(${bossData.x}px, ${bossData.y}px, 0)`;
-
-                // Intervalo de disparos del boss según fase
-                let currentRate = bossData.phase === 2 ? 16 : 38;
-                if (globalTimer % currentRate === 0) {
-                    spawnBossProjectile();
-                }
-
-                // Autodaño por fricción orbital
-                if (globalTimer % 24 === 0) {
-                    bossData.health -= 1;
-                    renderHUD();
-                }
-
-                // TRANSICIÓN CRÍTICA A FASE 2: Brutal chrisyqn Remix
-                if (bossData.health <= 180 && bossData.phase === 1) {
-                    bossData.phase = 2;
-                    bossVisorState.innerText = "X_X";
-                    bossVisorState.style.color = "var(--primary-red)";
-                    bossVisorState.style.textShadow = "0 0 10px var(--primary-red)";
-                    
-                    // Modificar dinámicamente la velocidad de la música
-                    synthBpm = 175; // Sube de golpe a tempo brutal
-                    startAudioSequencer();
-                }
-
-                // Condición de Victoria
-                if (bossData.health <= 0) {
-                    gameState = "victory";
-                    battleBoxEl.style.display = "none";
-                    bossEl.style.display = "none";
-                    hud.style.display = "none";
-                    document.querySelectorAll(".projectile").forEach(el => el.remove());
-                    document.getElementById("victoryScreen").style.display = "flex";
-                }
-            }
-
-            requestAnimationFrame(gameLoop);
-        }
-    </script>
+</script>
 </body>
 </html>
